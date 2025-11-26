@@ -76,4 +76,21 @@ out-root/
 - PANDA slides require the **Kaggle API** and a valid `~/.kaggle/kaggle.json`.
 - Existing files are **skipped automatically** to allow resuming.
 
----
+## Reference
+If you use **GIANT** or **MultiPathQA**, please cite our [paper](https://arxiv.org/abs/2511.19652)
+
+Thomas A. Buckley*, Kian R. Weihrauch*, Katherine Latham, Andrew Z. Zhou, Padmini A. Manrai, Arjun K. Manrai
+Navigating Gigapixel Pathology Images with Large Multimodal Models, 2025
+
+
+```bibtex
+@misc{buckley2025giant,
+      title={Navigating Gigapixel Pathology Images with Large Multimodal Models}, 
+      author={Thomas A. Buckley and Kian R. Weihrauch and Katherine Latham and Andrew Z. Zhou and Padmini A. Manrai and Arjun K. Manrai},
+      year={2025},
+      eprint={2511.19652},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2511.19652}, 
+}
+```
