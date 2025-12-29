@@ -6,14 +6,6 @@
 
 ---
 
-## GIANT
-Coming soon ⌛
-
-## MultiPathQA
-
-This repository contains a lightweight Python utility for downloading whole-slide images (WSIs) used in the **MultiPathQA** dataset.  
-It supports automated downloading from **GTEx**, **TCGA**, and **PANDA**, and organizes the images into per-dataset folders.
-
 ## 🚀 Installation
 
 ```bash
@@ -27,61 +19,114 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+## 📥 Downloading MultiPathQA Slides
 
-## 📥 Downloading Slides
-
-Run the downloader script:
+Download whole-slide images from GTEx, TCGA, and PANDA:
 
 ```bash
 python pull_dataset.py \
-    --csv /path/to/MultiPathQA.csv \
-    --out-root /path/to/save/images \
+    --csv MultiPathQA.csv \
+    --out-root /path/to/save/slides \
     --dataset "*"
 ```
 
-### Arguments
+**Arguments:**
+- `--csv`: Path to the MultiPathQA CSV file
+- `--out-root`: Root directory where images will be downloaded
+- `--dataset`: Which dataset to download (`tcga`, `gtex`, `panda`, or `"*"` for all)
+- `--chunk-size`: Optional chunk size for downloads (default: 8MB)
 
-| Argument       | Description |
-|----------------|-------------|
-| `--csv`        | Path to the MultiPathQA CSV file |
-| `--out-root`   | Root directory where images will be downloaded |
-| `--dataset`    | Which dataset to download (`tcga`, `gtex`, `panda`, or `"*"` for all) |
-| `--chunk-size` | Optional chunk size for downloads (default: 8MB) |
+**Notes:**
+- GTEx and TCGA slides are downloaded via HTTP from public APIs
+- PANDA slides require the Kaggle API and a valid `~/.kaggle/kaggle.json`
+- Existing files are skipped automatically to allow resuming
 
-### Example: download only TCGA slides
+## 🧩 Generating Patches for Baselines
 
-```bash
-python pull_dataset.py --csv MultiPathQA.csv --out-root slides --dataset tcga
-```
-
-### Example: download everything
+Clone [CLAM](https://github.com/mahmoodlab/CLAM) and generate patches:
 
 ```bash
-python pull_dataset.py --csv MultiPathQA.csv --out-root slides --dataset "*"
+# Example: PANDA dataset
+python create_patches_fp.py \
+    --source /path/to/panda_slides \
+    --save_dir /path/to/panda_patches \
+    --patch_size 224 \
+    --step_size 224 \
+    --seg --patch --no_auto_skip \
+    --preset clam_presets/panda.csv
 ```
 
-Images will be saved in:
+Presets for different datasets are in the `clam_presets/` folder.
 
+## 🌐 Running the Web App
+
+Launch the interactive web interface to analyze pathology slides:
+
+```bash
+python3 app.py
 ```
-out-root/
-    tcga/
-    gtex/
-    panda/
+
+Then open http://127.0.0.1:3010 in your browser. Click on a slide to start analyzing it with the AI agent.
+
+**Configuration:**
+- Add your OpenAI API key to `config.ini`
+- Place `.svs` or other supported slide files in the project directory
+- The app uses `gpt-5` by default (configurable in `app.py`)
+
+## 🧪 Running Benchmarks
+
+The benchmark script runs experiments using configuration files:
+
+```bash
+python scripts/run_benchmark.py --config scripts/configs/full_benchmark.yaml
 ```
 
+**Available configurations:**
+- `full_benchmark.yaml` - Complete benchmark (agent, patch, thumbnail modes)
+- `scaling_experiment.yaml` - Agent scaling across iteration counts
+- `thumbnail_resolution_sweep.yaml` - Thumbnail mode at different resolutions
+- `random_patch_experiment.yaml` - Random patch agent mode
 
-## 🧩 Notes
+**Configuration structure:**
 
-- GTEx and TCGA slides are downloaded via HTTP from public APIs.
-- PANDA slides require the **Kaggle API** and a valid `~/.kaggle/kaggle.json`.
-- Existing files are **skipped automatically** to allow resuming.
+```yaml
+models: ["claude-sonnet-4-5-20250929"]
 
-## Reference
-If you use **GIANT** or **MultiPathQA**, please cite our [paper](https://arxiv.org/abs/2511.19652)
+benchmarks:
+  - name: "gtex"
+    dataset: "benchmarks/gtex_organ_type_test.csv"
+    filedir: "/path/to/gtex_slides"
+    patch_dir: "/path/to/gtex_patches/patches"
 
-Thomas A. Buckley*, Kian R. Weihrauch*, Katherine Latham, Andrew Z. Zhou, Padmini A. Manrai, Arjun K. Manrai
-Navigating Gigapixel Pathology Images with Large Multimodal Models, 2025
+modes:
+  agent:
+    enabled: true
+    iterations: [20]
+    max_images_in_context: [null]
+    enable_note_tool: false
+    image_resolutions: [500]
+  
+  patch:
+    enabled: true
+    num_patches: 30
+  
+  thumbnail:
+    enabled: true
 
+timeout: 900.0
+max_retries: 3
+max_workers: 10
+limit: null
+output_dir: "results/full_benchmark"
+log_dir: "logs/full_benchmark"
+resume: true
+```
+
+Update `filedir` and `patch_dir` paths in the config files to match your local setup.
+
+## 📚 Citation
+
+If you use GIANT or MultiPathQA, please cite our [paper](https://arxiv.org/abs/2511.19652):
 
 ```bibtex
 @misc{buckley2025giant,

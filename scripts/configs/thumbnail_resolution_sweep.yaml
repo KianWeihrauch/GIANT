@@ -1,0 +1,50 @@
+# Thumbnail Resolution Sweep Configuration
+# Tests thumbnail mode at different resolutions
+
+models: ["gpt-5"]
+
+benchmarks:
+  - name: "gtex"
+    dataset: "benchmarks/gtex_organ_type_test.csv"
+    filedir: "/path/to/gtex_slides"
+    patch_dir: "/path/to/gtex_patches/patches"
+
+  - name: "tcga"
+    dataset: "benchmarks/test_llm_filtered.csv"
+    filedir: "/path/to/tcga_slides"
+    patch_dir: "/path/to/tcga_patches/patches"
+
+  - name: "tcga_slidebench"
+    dataset: "benchmarks/slidebench_small.csv"
+    filedir: "/path/to/slidebench_slides"
+    patch_dir: "/path/to/slidebench_patches/patches"
+
+  - name: "panda"
+    dataset: "benchmarks/panda_test_data_formatted.csv"
+    filedir: "/path/to/panda_slides"
+    patch_dir: "/path/to/panda_patches/patches"
+
+  - name: "tcga_expert_vqa"
+    dataset: "benchmarks/expert_path_qa_final.csv"
+    filedir: "/path/to/expert_vqa_slides"
+    patch_dir: "/path/to/expert_vqa_patches/patches"
+
+modes:
+  agent:
+    enabled: false
+  
+  patch:
+    enabled: false
+  
+  thumbnail:
+    enabled: true
+    image_resolutions: [250, 500, 1000, 2000, 3000, 4000]
+
+timeout: 300.0
+max_retries: 3
+max_workers: 30
+limit: null
+output_dir: "results/thumbnail_resolution_sweep"
+log_dir: "logs/thumbnail_resolution_sweep"
+resume: true
+num_repeat: null

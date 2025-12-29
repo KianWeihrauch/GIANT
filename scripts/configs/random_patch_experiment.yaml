@@ -1,0 +1,55 @@
+# Random Patch Experiment Configuration
+# Tests random patch agent mode
+
+models: ["gpt-5"]
+
+benchmarks:
+  - name: "gtex"
+    dataset: "benchmarks/gtex_organ_type_test.csv"
+    filedir: "/path/to/gtex_slides"
+    patch_dir: "/path/to/gtex_patches/patches"
+
+  - name: "tcga"
+    dataset: "benchmarks/test_llm_filtered.csv"
+    filedir: "/path/to/tcga_slides"
+    patch_dir: "/path/to/tcga_patches/patches"
+
+  - name: "tcga_slidebench"
+    dataset: "benchmarks/slidebench_small.csv"
+    filedir: "/path/to/slidebench_slides"
+    patch_dir: "/path/to/slidebench_patches/patches"
+
+  - name: "panda"
+    dataset: "benchmarks/panda_test_data_formatted.csv"
+    filedir: "/path/to/panda_slides"
+    patch_dir: "/path/to/panda_patches/patches"
+
+  - name: "tcga_expert_vqa"
+    dataset: "benchmarks/expert_path_qa_final.csv"
+    filedir: "/path/to/expert_vqa_slides"
+    patch_dir: "/path/to/expert_vqa_patches/patches"
+
+modes:
+  agent:
+    enabled: false
+  
+  random_patch_agent:
+    enabled: true
+    iterations: [20]
+    image_resolutions: [1000]
+  
+  patch:
+    enabled: false
+  
+  thumbnail:
+    enabled: false
+
+timeout: 900.0
+max_retries: 3
+max_workers: 10
+limit: null
+output_dir: "results/random_patch_experiment"
+log_dir: "logs/random_patch_experiment"
+resume: true
+num_repeat: null
+

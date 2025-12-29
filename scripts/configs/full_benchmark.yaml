@@ -1,0 +1,54 @@
+# Full Benchmark Configuration
+# Runs agent, patch, and thumbnail modes across all benchmarks
+
+models: ["claude-sonnet-4-5-20250929"]
+
+benchmarks:
+  - name: "gtex"
+    dataset: "benchmarks/gtex_organ_type_test.csv"
+    filedir: "/path/to/gtex_slides"
+    patch_dir: "/path/to/gtex_patches/patches"
+
+  - name: "tcga"
+    dataset: "benchmarks/test_llm_filtered.csv"
+    filedir: "/path/to/tcga_slides"
+    patch_dir: "/path/to/tcga_patches/patches"
+
+  - name: "tcga_slidebench"
+    dataset: "benchmarks/slidebench_small.csv"
+    filedir: "/path/to/slidebench_slides"
+    patch_dir: "/path/to/slidebench_patches/patches"
+
+  - name: "panda"
+    dataset: "benchmarks/panda_test_data_formatted.csv"
+    filedir: "/path/to/panda_slides"
+    patch_dir: "/path/to/panda_patches/patches"
+
+  - name: "tcga_expert_vqa"
+    dataset: "benchmarks/expert_path_qa_final.csv"
+    filedir: "/path/to/expert_vqa_slides"
+    patch_dir: "/path/to/expert_vqa_patches/patches"
+
+modes:
+  agent:
+    enabled: true
+    iterations: [20]
+    max_images_in_context: [null]
+    enable_note_tool: false
+    image_resolutions: [500]
+  
+  patch:
+    enabled: true
+    num_patches: 30
+  
+  thumbnail:
+    enabled: true
+
+timeout: 900.0
+max_retries: 3
+max_workers: 10
+limit: null
+output_dir: "results/full_benchmark"
+log_dir: "logs/full_benchmark"
+resume: true
+num_repeat: null

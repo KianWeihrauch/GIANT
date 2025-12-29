@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathology Image Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin-top: 50px;
+            padding: 40px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-analyze {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+        }
+        .spinner-border {
+            color: #667eea;
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .wsi-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .icon {
+            color: #667eea;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="main-container">
+                    <div class="header">
+                        <h1><i class="fas fa-microscope icon"></i>Pathology Image Scanner</h1>
+                        <p>AI-powered analysis of whole slide images using advanced computer vision</p>
+                    </div>
+
+                    <form id="analysisForm">
+                        <div class="mb-4">
+                            <label for="wsiSelect" class="form-label">
+                                <i class="fas fa-image icon"></i>Select WSI File
+                            </label>
+                            <select class="form-select" id="wsiSelect" required>
+                                <option value="">Choose a whole slide image...</option>
+                                {% for wsi_file in wsi_files %}
+                                <option value="{{ wsi_file }}">{{ wsi_file }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if not wsi_files %}
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                No WSI files found. Please add .dcm, .svs, .ndpi, .vms, .vmu, or .scn files to the project directory.
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="questionInput" class="form-label">
+                                <i class="fas fa-question-circle icon"></i>Analysis Question (Optional)
+                            </label>
+                            <textarea class="form-control" id="questionInput" rows="3" 
+                                      placeholder="Enter your specific question about the pathology slide, or leave blank for general examination...">Please start your examination.</textarea>
+                            <div class="form-text">
+                                Examples: "Look for signs of cancer", "Analyze tissue architecture", "Identify cellular abnormalities"
+                            </div>
+                        </div>
+
+                        <div class="wsi-info" id="wsiInfo" style="display: none;">
+                            <h6><i class="fas fa-info-circle icon"></i>Selected WSI Information</h6>
+                            <p id="wsiDetails" class="mb-0"></p>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-analyze">
+                                <i class="fas fa-play me-2"></i>Start Analysis
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="loading" id="loadingDiv">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5 class="mt-3">Analyzing pathology image...</h5>
+                        <p class="text-muted">This may take several minutes as the AI examines the slide in detail.</p>
+                    </div>
+
+                    <div id="errorDiv" class="alert alert-danger" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('wsiSelect').addEventListener('change', function() {
+            const wsiInfo = document.getElementById('wsiInfo');
+            const wsiDetails = document.getElementById('wsiDetails');
+            
+            if (this.value) {
+                wsiDetails.textContent = `File: ${this.value}`;
+                wsiInfo.style.display = 'block';
+            } else {
+                wsiInfo.style.display = 'none';
+            }
+        });
+
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const wsiFile = document.getElementById('wsiSelect').value;
+            const question = document.getElementById('questionInput').value;
+            
+            if (!wsiFile) {
+                showError('Please select a WSI file');
+                return;
+            }
+
+            // Show loading state
+            document.querySelector('.main-container form').style.display = 'none';
+            document.getElementById('loadingDiv').style.display = 'block';
+            document.getElementById('errorDiv').style.display = 'none';
+
+            // Send analysis request
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    wsi_file: wsiFile,
+                    question: question
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = `/results/${data.session_id}`;
+                } else {
+                    showError(data.error || 'Analysis failed');
+                }
+            })
+            .catch(error => {
+                showError('Network error: ' + error.message);
+            });
+        });
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorDiv').style.display = 'block';
+            document.querySelector('.main-container form').style.display = 'block';
+            document.getElementById('loadingDiv').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 
